@@ -33,6 +33,9 @@
 // GLM
 #include <glm/glm.hpp>
 
+// GLFW
+#include <glfw/glfw3.h>
+
 //
 // Project
 //
