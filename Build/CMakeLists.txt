@@ -176,3 +176,10 @@ If("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # Enable C++11 support.
     List(APPEND CMAKE_CXX_FLAGS "-std=c++11")
 EndIf()
+
+#
+# GLM
+#
+
+# Add include directory.
+Include_Directories("../External/GLM-0.9.8.0")
