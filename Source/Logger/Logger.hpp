@@ -6,6 +6,7 @@
 
 //
 // Logger
+//
 //  Writes log messages to multiple outputs for debugging purposes.
 //
 //  Example usage:

@@ -2,6 +2,7 @@
 
 //
 // Scope Guard
+//
 //  Executes a set function at the end of it's lifetime.
 //
 //  Creating a scope guard:

@@ -4,6 +4,7 @@
 
 //
 // Collectors
+//
 //  Collects return types of multiple invocations.
 //  Returns boolean on call that indicates if collection should continue.
 //

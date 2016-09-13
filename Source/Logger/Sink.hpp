@@ -4,6 +4,7 @@
 
 //
 // Sink
+//
 //  Writes messages to multiple outputs.
 //
 

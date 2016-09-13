@@ -4,6 +4,7 @@
 
 //
 // Delegate
+//
 //  Binds a function which can be invoked at a later time.
 //  Be careful not to invoke a delagate to a method of an instance that no longer exists.
 //  Check Receiver and Dispatcher classes for a subscription based solution that wraps delegates.

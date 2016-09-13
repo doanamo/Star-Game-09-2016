@@ -4,6 +4,7 @@
 
 //
 // Message
+//
 //  Logger message object.
 //
 

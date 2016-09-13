@@ -5,6 +5,7 @@
 
 //
 // Console Output
+//
 //  Writes log messsages to the console window.
 //
 

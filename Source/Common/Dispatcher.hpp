@@ -10,6 +10,7 @@ class Receiver;
 
 //
 // Dispatcher
+//
 //  Holds a list of subscribed receivers that can be invoked all at once. 
 //  More safe than using raw delegates as unsubscribing is automated at 
 //  receiver's destruction. No dangerous dangling pointers are left.

@@ -4,6 +4,7 @@
 
 //
 // Output
+//
 //  Base interface for output implementations.
 //
 

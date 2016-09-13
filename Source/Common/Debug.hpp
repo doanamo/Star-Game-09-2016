@@ -5,7 +5,6 @@
 //
 
 // Windows specific defines.
-
 #if defined(WIN32) && !defined(NDEBUG)
     #define _CRTDBG_MAP_ALLOC
     #define _CRTDBG_MAP_ALLOC_NEW

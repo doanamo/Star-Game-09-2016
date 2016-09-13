@@ -2,6 +2,7 @@
 
 //
 // NonCopyable
+//
 //  Prevents an instance of derived class from being copied.
 //
 //  Example usage:
