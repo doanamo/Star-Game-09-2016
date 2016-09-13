@@ -79,7 +79,6 @@ namespace System
 
         struct Events
         {
-            // Constructor.
             Events(EventDispatchers& dispatchers);
 
             // Move signal.

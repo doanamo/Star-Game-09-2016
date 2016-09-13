@@ -61,7 +61,7 @@ namespace Logger
     class ScopedMessage : public Message
     {
     public:
-        ScopedMessage(Logger::Sink* sink);
+        explicit ScopedMessage(Logger::Sink* sink);
         ScopedMessage(ScopedMessage&& other);
         ~ScopedMessage();
 

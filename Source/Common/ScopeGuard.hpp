@@ -71,7 +71,7 @@ public:
         {
         }
 
-        Condition(bool value) :
+        explicit Condition(bool value) :
             m_value(value)
         {
         }
