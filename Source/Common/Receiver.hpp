@@ -53,9 +53,22 @@ public:
         Delegate<ReturnType(Arguments...)>::Cleanup();
     }
 
+    // Subcribes to a dispatcher.
+    void Subscribe(DispatcherBase<ReturnType(Arguments...)>& dispatcher)
+    {
+        // Unsubscribe from the current dispatcher.
+        this->Unsubscribe();
+
+        // Subscribe to the new dispatcher.
+        dispatcher.Subscribe(*this);
+
+        Assert(m_dispatcher == &dispatcher, "Receiver subscribed to wrong dispatcher!");
+    }
+
     // Unsubscribes from the current dispatcher.
     void Unsubscribe()
     {
+        // Unsubscribe from the current dispatcher
         if(m_dispatcher != nullptr)
         {
             m_dispatcher->Unsubscribe(*this);

@@ -32,8 +32,8 @@ class Receiver;
 //      receiverB.Bind<Class, &Class::FunctionB>(&instance);
 //      
 //      Dispatcher<void(const EventData&)> dispatcher;
-//      dispatcher.Subscribe(receiverA);
-//      dispatcher.Subscribe(receiverB);
+//      receiverA.Subscribe(dispatcher);
+//      receiverB.Subscribe(dispatcher);
 //      dispatcher.Dispatch(EventData(/* ... */));
 //
 
@@ -51,20 +51,23 @@ protected:
     // Restores instance to it's original state.
     void Cleanup();
 
+    // Invokes receivers with following arguments.
+    template<typename Collector>
+    ReturnType Dispatch(Arguments... arguments);
+
 public:
+    // Checks if has any subscribers.
+    bool HasSubscribers() const;
+
+private:
+    // Friend declaration.
+    friend Receiver<ReturnType(Arguments...)>;
+
     // Subscribes a receiver.
     void Subscribe(Receiver<ReturnType(Arguments...)>& receiver);
 
     // Unsubscribes a receiver.
     void Unsubscribe(Receiver<ReturnType(Arguments...)>& receiver);
-
-    // Checks if has any subscribers.
-    bool HasSubscribers() const;
-
-protected:
-    // Invokes receivers with following arguments.
-    template<typename Collector>
-    ReturnType Dispatch(Arguments... arguments);
 
 private:
     // List of receivers.
@@ -175,13 +178,10 @@ void DispatcherBase<ReturnType(Arguments...)>::Cleanup()
 template<typename ReturnType, typename... Arguments>
 void DispatcherBase<ReturnType(Arguments...)>::Subscribe(Receiver<ReturnType(Arguments...)>& receiver)
 {
-    // Check if receiver is already subscribed somewhere else.
-    if(receiver.m_dispatcher != nullptr)
-        return;
-
+    Assert(receiver.m_dispatcher == nullptr, "Receiver is already subscribed to another dispatcher!");
     Assert(receiver.m_previous == nullptr, "Receiver's previous list element is not nullptr!");
     Assert(receiver.m_next == nullptr, "Receiver's next list element is not nullptr!");
-    
+
     // Add receiver to the linked list.
     if(m_begin == nullptr)
     {
@@ -206,9 +206,7 @@ void DispatcherBase<ReturnType(Arguments...)>::Subscribe(Receiver<ReturnType(Arg
 template<typename ReturnType, typename... Arguments>
 void DispatcherBase<ReturnType(Arguments...)>::Unsubscribe(Receiver<ReturnType(Arguments...)>& receiver)
 {
-    // Check if receiver is subscribed to this dispatcher.
-    if(receiver.m_dispatcher != this)
-        return;
+    Assert(receiver.m_dispatcher != this, "Receiver is not subscribed to this dispatcher!");
 
     // Remove receiver from the linked list.
     if(m_begin == &receiver)
