@@ -23,6 +23,7 @@ Set(PrecompiledHeader "Precompiled.hpp")
 Set(PrecompiledSource "Precompiled.cpp")
 
 Set(SourceFiles
+    "Main.hpp"
     "Main.cpp"
     
     "${PrecompiledHeader}"
@@ -53,6 +54,9 @@ Set(SourceFiles
     "Logger/Outputs/ConsoleOutput.cpp"
     "Logger/Outputs/FileOutput.hpp"
     "Logger/Outputs/FileOutput.cpp"
+
+    "System/Window.hpp"
+    "System/Window.cpp"
 )
 
 # Append source directory path to each source file.

@@ -50,3 +50,4 @@
 #include "Common/Dispatcher.hpp"
 #include "Common/Collector.hpp"
 #include "Logger/Logger.hpp"
+#include "Main.hpp"
