@@ -16,6 +16,7 @@ class ReceiverInvoker;
 //
 //  Invokes a function/method after receiving a signal from a dispatcher.
 //  A single receiver instance can be connected to only one dispatcher.
+//
 //  See Dispatcher class for more information.
 //
 

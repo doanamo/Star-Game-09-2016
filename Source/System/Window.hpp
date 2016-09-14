@@ -27,8 +27,7 @@
 //      Class instance;
 //      Receiver<void(const Window::Events::KeyboardKey&)> receiver;
 //      receiver.Bind<InputState, &InputState::OnKeyboardKey>(&instance);
-//      
-//      window.events.keyboardKey.Subscribe(receiver);
+//      receiver.Subscribe(window.events.keyboardKey);
 //
 
 namespace System
