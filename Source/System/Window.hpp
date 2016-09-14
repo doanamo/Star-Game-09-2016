@@ -81,7 +81,7 @@ namespace System
         {
             Events(EventDispatchers& dispatchers);
 
-            // Move signal.
+            // Move event.
             struct Move
             {
                 int x;
@@ -90,7 +90,7 @@ namespace System
 
             DispatcherBase<void(const Move&)>& move;
 
-            // Resize signal.
+            // Resize event.
             struct Resize
             {
                 int width;
@@ -99,7 +99,7 @@ namespace System
 
             DispatcherBase<void(const Resize&)>& resize;
 
-            // Focus signal.
+            // Focus event.
             struct Focus
             {
                 bool focused;
@@ -107,14 +107,14 @@ namespace System
 
             DispatcherBase<void(const Focus&)>& focus;
 
-            // Close signal.
+            // Close event.
             struct Close
             {
             };
 
             DispatcherBase<void(const Close&)>& close;
 
-            // Keyboard key signal.
+            // Keyboard key event.
             struct KeyboardKey
             {
                 int key;
@@ -125,7 +125,7 @@ namespace System
 
             DispatcherBase<void(const KeyboardKey&)>& keyboardKey;
 
-            // Text input signal.
+            // Text input event.
             struct TextInput
             {
                 unsigned int character;
@@ -133,7 +133,7 @@ namespace System
 
             DispatcherBase<void(const TextInput&)>& textInput;
 
-            // Mouse button signal.
+            // Mouse button event.
             struct MouseButton
             {
                 int button;
@@ -143,7 +143,7 @@ namespace System
 
             DispatcherBase<void(const MouseButton&)>& mouseButton;
 
-            // Mouse scroll signal.
+            // Mouse scroll event.
             struct MouseScroll
             {
                 double offset;
@@ -151,7 +151,7 @@ namespace System
 
             DispatcherBase<void(const MouseScroll&)>& mouseScroll;
 
-            // Cursor position signal.
+            // Cursor position event.
             struct CursorPosition
             {
                 double x;
@@ -160,7 +160,7 @@ namespace System
 
             DispatcherBase<void(const CursorPosition&)>& cursorPosition;
 
-            // Cursor enter signal.
+            // Cursor enter event.
             struct CursorEnter
             {
                 bool entered;

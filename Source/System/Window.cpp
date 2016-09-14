@@ -295,7 +295,7 @@ bool Window::Initialize()
         return false;
     }
 
-    // Set window user data.
+    // Set event dispatchers as window user data.
     glfwSetWindowUserPointer(m_window, &m_dispatchers);
 
     // Add event callbacks.
