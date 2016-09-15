@@ -199,6 +199,24 @@ Find_Package(OpenGL REQUIRED)
 Target_Link_Libraries(${TargetName} ${OPENGL_gl_LIBRARY})
 
 #
+# GLEW
+#
+
+# Add library directory.
+Add_Subdirectory("../External/GLEW-2.0.0/build/cmake" "GLEW" EXCLUDE_FROM_ALL)
+
+# Add include directory.
+Include_Directories("../External/GLEW-2.0.0/include")
+
+# Move library target to dependencies.
+Set_Property(TARGET "glew_s" PROPERTY PROJECT_LABEL "GLEW")
+Set_Property(TARGET "glew_s" PROPERTY FOLDER "External")
+
+# Link library target.
+Add_Dependencies(${TargetName} "glew_s")
+Target_Link_Libraries(${TargetName} "glew_s")
+
+#
 # GLFW
 #
 

@@ -269,7 +269,7 @@ bool Window::Initialize()
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     m_window = glfwCreateWindow(1024, 576, "Game", nullptr, nullptr);
@@ -301,9 +301,7 @@ bool Window::Initialize()
     // Set the swap interval.
     glfwSwapInterval((int)true);
 
-    /*
     // Initialize GLEW library.
-    glewExperimental = GL_TRUE;
     GLenum error = glewInit();
 
     if(error != GLEW_OK)
@@ -313,12 +311,13 @@ bool Window::Initialize()
         return false;
     }
 
+    Assert(glGetError() == GL_NO_ERROR, "OpenGL error occurred during context initialization!");
+
     // Check created OpenGL context.
     int glMajor = glfwGetWindowAttrib(m_window, GLFW_CONTEXT_VERSION_MAJOR);
     int glMinor = glfwGetWindowAttrib(m_window, GLFW_CONTEXT_VERSION_MINOR);
 
     Log() << "Created OpenGL " << glMajor << "." << glMinor << " context.";
-    */
 
     // Success!
     int windowWidth, windowHeight;
