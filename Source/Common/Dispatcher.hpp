@@ -70,7 +70,7 @@ private:
     void Unsubscribe(Receiver<ReturnType(Arguments...)>& receiver);
 
 private:
-    // List of receivers.
+    // Double linked list of receivers.
     Receiver<ReturnType(Arguments...)>* m_begin;
     Receiver<ReturnType(Arguments...)>* m_end;
 };

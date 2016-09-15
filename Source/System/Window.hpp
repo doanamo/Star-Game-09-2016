@@ -73,13 +73,9 @@ namespace System
         GLFWwindow* GetPrivate();
 
     public:
-        // Public event dispatchers.
-        struct EventDispatchers;
-
+        // Window events.
         struct Events
         {
-            Events(EventDispatchers& dispatchers);
-
             // Move event.
             struct Move
             {
@@ -87,7 +83,7 @@ namespace System
                 int y;
             };
 
-            DispatcherBase<void(const Move&)>& move;
+            Dispatcher<void(const Move&)> move;
 
             // Resize event.
             struct Resize
@@ -96,7 +92,7 @@ namespace System
                 int height;
             };
 
-            DispatcherBase<void(const Resize&)>& resize;
+            Dispatcher<void(const Resize&)> resize;
 
             // Focus event.
             struct Focus
@@ -104,14 +100,14 @@ namespace System
                 bool focused;
             };
 
-            DispatcherBase<void(const Focus&)>& focus;
+            Dispatcher<void(const Focus&)> focus;
 
             // Close event.
             struct Close
             {
             };
 
-            DispatcherBase<void(const Close&)>& close;
+            Dispatcher<void(const Close&)> close;
 
             // Keyboard key event.
             struct KeyboardKey
@@ -122,7 +118,7 @@ namespace System
                 int mods;
             };
 
-            DispatcherBase<void(const KeyboardKey&)>& keyboardKey;
+            Dispatcher<void(const KeyboardKey&)> keyboardKey;
 
             // Text input event.
             struct TextInput
@@ -130,7 +126,7 @@ namespace System
                 unsigned int character;
             };
 
-            DispatcherBase<void(const TextInput&)>& textInput;
+            Dispatcher<void(const TextInput&)> textInput;
 
             // Mouse button event.
             struct MouseButton
@@ -140,7 +136,7 @@ namespace System
                 int mods;
             };
 
-            DispatcherBase<void(const MouseButton&)>& mouseButton;
+            Dispatcher<void(const MouseButton&)> mouseButton;
 
             // Mouse scroll event.
             struct MouseScroll
@@ -148,7 +144,7 @@ namespace System
                 double offset;
             };
 
-            DispatcherBase<void(const MouseScroll&)>& mouseScroll;
+            Dispatcher<void(const MouseScroll&)> mouseScroll;
 
             // Cursor position event.
             struct CursorPosition
@@ -157,7 +153,7 @@ namespace System
                 double y;
             };
 
-            DispatcherBase<void(const CursorPosition&)>& cursorPosition;
+            Dispatcher<void(const CursorPosition&)> cursorPosition;
 
             // Cursor enter event.
             struct CursorEnter
@@ -165,30 +161,12 @@ namespace System
                 bool entered;
             };
 
-            DispatcherBase<void(const CursorEnter&)>& cursorEnter;
+            Dispatcher<void(const CursorEnter&)> cursorEnter;
         } events;
-
-        // Private event dispatchers.
-        struct EventDispatchers
-        {
-            Dispatcher<void(const Events::Move&)>           move;
-            Dispatcher<void(const Events::Resize&)>         resize;
-            Dispatcher<void(const Events::Focus&)>          focus;
-            Dispatcher<void(const Events::Close&)>          close;
-            Dispatcher<void(const Events::KeyboardKey&)>    keyboardKey;
-            Dispatcher<void(const Events::TextInput&)>      textInput;
-            Dispatcher<void(const Events::MouseButton&)>    mouseButton;
-            Dispatcher<void(const Events::MouseScroll&)>    mouseScroll;
-            Dispatcher<void(const Events::CursorPosition&)> cursorPosition;
-            Dispatcher<void(const Events::CursorEnter&)>    cursorEnter;
-        };
 
     private:
         // Window implementation.
         GLFWwindow* m_window;
-
-        // Event dispatchers.
-        EventDispatchers m_dispatchers;
 
         // Initialization state.
         bool m_initialized;
