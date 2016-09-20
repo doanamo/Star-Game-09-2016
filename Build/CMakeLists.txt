@@ -66,7 +66,7 @@ Set(SourceFilesTemp)
 
 ForEach(SourceFile ${SourceFiles})
     List(APPEND SourceFilesTemp "${SourceDir}/${SourceFile}")
-    Message("SourceFile: ${SourceFile} => ${SourceDir}/${SourceFile}")
+    # Message("SourceFile: ${SourceFile} => ${SourceDir}/${SourceFile}")
 EndForEach()
 
 Set(SourceFiles ${SourceFilesTemp})
@@ -102,7 +102,7 @@ ForEach(SourceFile ${SourceFiles})
         Source_Group("Source" FILES ${SourceFile})
     EndIf()
     
-    Message("SourceFilePath: ${SourceFile} => ${SourceFilePath}")
+    # Message("SourceFilePath: ${SourceFile} => ${SourceFilePath}")
 EndForEach()
 
 #
