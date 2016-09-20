@@ -349,6 +349,9 @@ void Window::Present()
         return;
 
     glfwSwapBuffers(m_window);
+
+    // Check if there are any caught OpenGL errors.
+    Assert(glGetError() == GL_NO_ERROR, "Uncatched OpenGL error!");
 }
 
 void Window::Close()
