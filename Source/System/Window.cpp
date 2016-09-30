@@ -350,8 +350,8 @@ void Window::Present()
 
     glfwSwapBuffers(m_window);
 
-    // Check if there are any caught OpenGL errors.
-    Assert(glGetError() == GL_NO_ERROR, "Uncatched OpenGL error!");
+    // Check if there are any uncaught OpenGL errors.
+    Assert(glGetError() == GL_NO_ERROR, "Found an uncaught OpenGL error in the last frame!");
 }
 
 void Window::Close()
