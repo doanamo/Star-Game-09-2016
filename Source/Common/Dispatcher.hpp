@@ -185,14 +185,14 @@ void DispatcherBase<ReturnType(Arguments...)>::Subscribe(Receiver<ReturnType(Arg
     // Add receiver to the linked list.
     if(m_begin == nullptr)
     {
-        Assert(m_end == nullptr, "Linked list's beginning is nullptr but the end is not!");
+        Assert(m_end == nullptr, "Linked list's beginning is nullptr but its end is not!");
 
         m_begin = &receiver;
         m_end = &receiver;
     }
     else
     {
-        Assert(m_end != nullptr, "Linked list's end is nullptr but the beginning is not!");
+        Assert(m_end != nullptr, "Linked list's end is nullptr but its beginning is not!");
 
         m_end->m_next = &receiver;
         receiver.m_previous = m_end;

@@ -41,7 +41,7 @@ public:
 
     virtual ~Receiver()
     {
-        Cleanup();
+        this->Cleanup();
     }
 
     // Restores instance to it's original state.
@@ -63,7 +63,7 @@ public:
         // Subscribe to the new dispatcher.
         dispatcher.Subscribe(*this);
 
-        Assert(m_dispatcher == &dispatcher, "Receiver subscribed to wrong dispatcher!");
+        Assert(m_dispatcher == &dispatcher, "Receiver subscribed to a wrong dispatcher!");
     }
 
     // Unsubscribes from the current dispatcher.

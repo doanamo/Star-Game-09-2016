@@ -40,6 +40,7 @@ Message& Message::SetText(const char* text)
 
 Message& Message::SetSource(const char* source)
 {
+    // Store constant string before processing it.
     m_source = source;
 
     // Truncate the source file path.
@@ -84,7 +85,7 @@ Message& Message::SetSource(const char* source)
 
 Message& Message::SetLine(int line)
 {
-    Assert(line > 0, "Attempting to set an invalid source line!");
+    Assert(line > 0, "Attempted to set an invalid source line!");
 
     m_line = line;
     return *this;
@@ -113,6 +114,7 @@ bool Message::IsEmpty() const
 ScopedMessage::ScopedMessage(Logger::Sink* sink) :
     m_sink(sink)
 {
+    Assert(sink != nullptr, "Attempted to create a scoped message with no sink!")
 }
 
 ScopedMessage::ScopedMessage(ScopedMessage&& other)

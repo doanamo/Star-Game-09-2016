@@ -35,6 +35,7 @@ void Sink::Write(const Logger::Message& message)
     // Write a message to all outputs.
     for(auto output : m_outputs)
     {
+        Assert(output != nullptr, "Sink output is nullptr!");
         output->Write(message);
     }
 }
