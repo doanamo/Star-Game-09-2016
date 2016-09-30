@@ -33,7 +33,7 @@
 namespace System
 {
     // Window class.
-    class Window
+    class Window : private NonCopyable
     {
     public:
         Window();
