@@ -1,4 +1,5 @@
 #include "Precompiled.hpp"
+#include "System/Config.hpp"
 #include "System/Window.hpp"
 
 int main(int argc, char* argv[])
@@ -7,11 +8,18 @@ int main(int argc, char* argv[])
     Debug::Initialize();
     Logger::Initialize();
 
+    // Initialize the config.
+    System::Config config;
+    if(!config.Initialize())
+        return -1;
+
+    SCOPE_GUARD(config.Cleanup());
+
     // Initialize the window.
     System::WindowInfo windowInfo;
-    windowInfo.width = 1024;
-    windowInfo.height = 576;
-    windowInfo.vsync = true;
+    windowInfo.width = config.GetVariable<int>("Window.Width", 1024);
+    windowInfo.height = config.GetVariable<int>("Window.Height", 576);
+    windowInfo.vsync = config.GetVariable<bool>("Window.Vsync", true);
 
     System::Window window;
     if(!window.Initialize(windowInfo))

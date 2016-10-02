@@ -50,7 +50,7 @@ namespace System
         Window();
         ~Window();
 
-        // Restores instance to it's original state.
+        // Restores instance to its original state.
         void Cleanup();
 
         // Initializes the window instance.
