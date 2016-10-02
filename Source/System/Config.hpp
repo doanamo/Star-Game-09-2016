@@ -72,11 +72,11 @@ namespace System
             it = result.first;
         }
 
-        // Convert variable value from string.
-        Type value;
+        // Convert variable value from a string and return it.
         std::istringstream convert(it->second);
-        convert >> value;
 
+        Type value;
+        convert >> value;
         return value;
     }
 }
