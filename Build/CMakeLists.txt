@@ -59,6 +59,8 @@ Set(SourceFiles
     "System/Config.cpp"
     "System/Window.hpp"
     "System/Window.cpp"
+
+    "Game/EntityHandle.hpp"
 )
 
 # Append source directory path to each source file.
