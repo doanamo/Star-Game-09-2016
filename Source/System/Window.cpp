@@ -1,5 +1,6 @@
 #include "Precompiled.hpp"
 #include "Window.hpp"
+#include "Config.hpp"
 using namespace System;
 
 namespace
@@ -175,6 +176,14 @@ namespace
     }
 }
 
+WindowInfo::WindowInfo() :
+    name("Game"),
+    width(1024),
+    height(576),
+    vsync(true)
+{
+}
+
 Window::Window() :
     m_window(nullptr),
     m_initialized(false)
@@ -230,7 +239,7 @@ void Window::Cleanup()
     m_initialized = false;
 }
 
-bool Window::Initialize()
+bool Window::Initialize(const WindowInfo& info)
 {
     // Cleanup this instance.
     this->Cleanup();
@@ -272,7 +281,7 @@ bool Window::Initialize()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    m_window = glfwCreateWindow(1024, 576, "Game", nullptr, nullptr);
+    m_window = glfwCreateWindow(info.width, info.height, info.name.c_str(), nullptr, nullptr);
 
     if(m_window == nullptr)
     {
@@ -299,7 +308,7 @@ bool Window::Initialize()
     glfwMakeContextCurrent(m_window);
 
     // Set the swap interval.
-    glfwSwapInterval((int)true);
+    glfwSwapInterval((int)info.vsync);
 
     // Initialize GLEW library.
     GLenum error = glewInit();
@@ -351,7 +360,7 @@ void Window::Present()
     glfwSwapBuffers(m_window);
 
     // Check if there are any uncaught OpenGL errors.
-    Assert(glGetError() == GL_NO_ERROR, "Found an uncaught OpenGL error in the last frame!");
+    Assert(glGetError() == GL_NO_ERROR, "Found uncaught OpenGL error(s) in the last frame!");
 }
 
 void Window::Close()

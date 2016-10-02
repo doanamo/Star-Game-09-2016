@@ -10,7 +10,7 @@
 //
 //  Example usage:
 //      System::Window window;
-//      window.Initialize(/* ... */);
+//      window.Initialize();
 //      
 //      while(window.IsOpen())
 //      {
@@ -32,6 +32,17 @@
 
 namespace System
 {
+    // Window initialization struct.
+    struct WindowInfo
+    {
+        WindowInfo();
+
+        std::string name;
+        int width;
+        int height;
+        bool vsync;
+    };
+
     // Window class.
     class Window : private NonCopyable
     {
@@ -43,7 +54,7 @@ namespace System
         void Cleanup();
 
         // Initializes the window instance.
-        bool Initialize();
+        bool Initialize(const WindowInfo& info = WindowInfo());
 
         // Makes window's context current.
         void MakeContextCurrent();

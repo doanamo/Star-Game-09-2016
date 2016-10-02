@@ -1,8 +1,6 @@
 #include "Precompiled.hpp"
 #include "System/Window.hpp"
 
-System::Window Window;
-
 int main(int argc, char* argv[])
 {
     Build::Initialize();
@@ -10,19 +8,25 @@ int main(int argc, char* argv[])
     Logger::Initialize();
 
     // Initialize the window.
-    if(!Window.Initialize())
+    System::WindowInfo windowInfo;
+    windowInfo.width = 1024;
+    windowInfo.height = 576;
+    windowInfo.vsync = true;
+
+    System::Window window;
+    if(!window.Initialize(windowInfo))
         return -1;
 
-    SCOPE_GUARD(Window.Cleanup());
+    SCOPE_GUARD(window.Cleanup());
 
     // Main loop.
-    while(Window.IsOpen())
+    while(window.IsOpen())
     {
-        Window.ProcessEvents();
+        window.ProcessEvents();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        Window.Present();
+        window.Present();
     }
 
     return 0;
