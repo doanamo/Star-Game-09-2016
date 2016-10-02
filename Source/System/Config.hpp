@@ -14,10 +14,6 @@ namespace System
     class Config : private NonCopyable
     {
     public:
-        // Type declarations.
-        typedef std::map<std::string, std::string> VariableMap;
-
-    public:
         Config();
         ~Config();
 
@@ -34,6 +30,10 @@ namespace System
         // Gets a config variable.
         template<typename Type>
         Type GetVariable(const std::string name, const Type& default);
+
+    private:
+        // Type declarations.
+        typedef std::map<std::string, std::string> VariableMap;
 
     private:
         // Map of variables.
