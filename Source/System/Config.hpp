@@ -5,7 +5,16 @@
 //
 // Config
 //
-//  Stores application's configuration variables.
+//  Stores application's configuration which can be
+//  read from a file and then accessed in runtime.
+//
+//  Example usage:
+//      System::Config config;
+//      config.Initialize("Game.cfg");
+//      
+//      width = config.GetVariable<int>("Window.Width", 1024);
+//      height = config.GetVariable<int>("Window.Height", 576);
+//      vsync = config.GetVariable<bool>("Window.Vsync", true);
 //
 
 namespace System
