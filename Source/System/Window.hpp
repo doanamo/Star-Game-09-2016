@@ -35,12 +35,12 @@ namespace System
     // Window initialization struct.
     struct WindowInfo
     {
-        WindowInfo();
-
         std::string name;
         int width;
         int height;
         bool vsync;
+
+        WindowInfo();
     };
 
     // Window class.
