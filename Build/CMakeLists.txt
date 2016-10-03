@@ -61,6 +61,8 @@ Set(SourceFiles
     "System/Window.cpp"
 
     "Game/EntityHandle.hpp"
+    "Game/EntitySystem.hpp"
+    "Game/EntitySystem.cpp"
 )
 
 # Append source directory path to each source file.

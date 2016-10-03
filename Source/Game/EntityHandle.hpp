@@ -21,8 +21,8 @@ namespace Game
 
         // Constructor.
         EntityHandle() :
-            identifier(-1),
-            version(-1)
+            identifier(0),
+            version(0)
         {
         }
 
