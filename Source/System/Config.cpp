@@ -14,6 +14,9 @@ Config::~Config()
 
 void Config::Cleanup()
 {
+    if(!m_initialized)
+        return;
+
     // Clear the variable map.
     Utility::ClearContainer(m_variables);
 
