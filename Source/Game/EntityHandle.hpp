@@ -13,35 +13,60 @@
 namespace Game
 {
     // Entity handle class.
-    struct EntityHandle
+    class EntityHandle
     {
-        // Handle data.
-        int identifier;
-        int version;
+    public:
+        // Friend declarations.
+        friend class EntitySystem;
 
+    public:
         // Constructor.
         EntityHandle() :
-            identifier(0),
-            version(0)
+            m_identifier(0),
+            m_version(0)
+        {
+        }
+
+        // Copy constructor.
+        EntityHandle(const EntityHandle& other) :
+            m_identifier(other.m_identifier),
+            m_version(other.m_version)
         {
         }
 
         // Comparison operators.
         bool operator==(const EntityHandle& other) const
         {
-            return identifier == other.identifier && version == other.version;
+            return m_identifier == other.m_identifier && m_version == other.m_version;
         }
 
         bool operator!=(const EntityHandle& other) const
         {
-            return identifier != other.identifier || version != other.version;
+            return m_identifier != other.m_identifier || m_version != other.m_version;
         }
 
         // Sorting operator.
         bool operator<(const EntityHandle& other) const
         {
-            return identifier < other.identifier;
+            return m_identifier < other.m_identifier;
         }
+
+        // Gets the identifier.
+        int GetIdentifier() const
+        {
+            return m_identifier;
+        }
+
+        // Gets the version.
+        int GetVersion() const
+        {
+            return m_version;
+        }
+
+    private:
+        // Handle data.
+        int m_identifier;
+        int m_version;
     };
 }
 
@@ -55,7 +80,7 @@ namespace std
         std::size_t operator()(const Game::EntityHandle& handle) const
         {
             // Use the identifier as a hash.
-            return handle.identifier;
+            return handle.GetIdentifier();
         }
     };
 
@@ -68,7 +93,7 @@ namespace std
             // Use combined identifiers as a hash.
             // This turns two 32bit integers into 64bit one.
             // We assume std::size_t is 64bit, but it's fine if it's not.
-            return (std::size_t)pair.first.identifier * std::numeric_limits<int>::max() + pair.second.identifier;
+            return (std::size_t)pair.first.GetIdentifier() * std::numeric_limits<int>::max() + pair.second.GetIdentifier();
         }
     };
 }
