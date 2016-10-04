@@ -56,8 +56,8 @@ namespace Game
         // Checks if an entity handle is valid.
         bool IsHandleValid(const EntityHandle& entity) const;
 
-        // Returns the number of created entities.
-        unsigned int GetEntityCount() const;
+        // Returns the number of active entities.
+        int GetEntityCount() const;
 
     public:
         // Entity events.
@@ -66,7 +66,7 @@ namespace Game
             // Create event.
             struct Create
             {
-                EntityHandle handle;
+                const EntityHandle handle;
             };
 
             Dispatcher<void(Create)> create;
@@ -74,7 +74,7 @@ namespace Game
             // Finalize event.
             struct Finalize
             {
-                EntityHandle handle;
+                const EntityHandle handle;
             };
 
             Dispatcher<bool(Finalize), CollectWhileTrue<bool>> finalize;
@@ -82,15 +82,11 @@ namespace Game
             // Destroy event.
             struct Destroy
             {
-                EntityHandle handle;
+                const EntityHandle handle;
             };
 
             Dispatcher<void(Destroy)> destroy;
         } events;
-
-    private:
-        // Frees an entity handle.
-        void FreeHandle(int index, struct HandleEntry& entry);
 
     private:
         // Handle flags.
@@ -140,14 +136,18 @@ namespace Game
         typedef std::vector<HandleEntry> HandleList;
 
     private:
+        // Frees an entity handle.
+        void FreeHandle(const int handleIndex, HandleEntry& handEntry);
+
+    private:
         // List of commands.
         CommandList m_commands;
 
-        // List of entity entries.
+        // List of entity handles.
         HandleList m_handles;
 
-        // Number of created entities.
-        unsigned int m_entityCount;
+        // Number of active entities.
+        int m_entityCount;
 
         // List of free handles.
         int  m_freeListDequeue;
