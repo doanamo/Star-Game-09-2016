@@ -63,14 +63,6 @@ namespace Game
         // Entity events.
         struct Events
         {
-            // Create event.
-            struct Create
-            {
-                const EntityHandle handle;
-            };
-
-            Dispatcher<void(Create)> create;
-
             // Finalize event.
             struct Finalize
             {
@@ -78,6 +70,14 @@ namespace Game
             };
 
             Dispatcher<bool(Finalize), CollectWhileTrue<bool>> finalize;
+
+            // Create event.
+            struct Create
+            {
+                const EntityHandle handle;
+            };
+
+            Dispatcher<void(Create)> create;
 
             // Destroy event.
             struct Destroy
@@ -136,6 +136,15 @@ namespace Game
         typedef std::vector<HandleEntry> HandleList;
 
     private:
+        // Allocate an entity handle.
+        void AllocateHandle();
+
+        // Creates an entity handle.
+        void CreateHandle(const int handleIndex, HandleEntry& handEntry);
+
+        // Destroys an entity handle.
+        void DestroyHandle(const int handleIndex, HandleEntry& handEntry);
+
         // Frees an entity handle.
         void FreeHandle(const int handleIndex, HandleEntry& handEntry);
 

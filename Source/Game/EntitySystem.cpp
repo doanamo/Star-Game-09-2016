@@ -37,8 +37,8 @@ void EntitySystem::Cleanup()
     this->DestroyAllEntities();
 
     // Cleanup event dispatchers.
-    this->events.create.Cleanup();
     this->events.finalize.Cleanup();
+    this->events.create.Cleanup();
     this->events.destroy.Cleanup();
 
     // Clear the command list.
@@ -91,31 +91,17 @@ EntityHandle EntitySystem::CreateEntity()
     // Check if we reached the numerical limit.
     Verify(m_handles.size() < MaximumIdentifier, "Entity handle identifier reached its numerical limit!");
 
-    // Create a new handle if the free list queue is empty.
+    // Allocate a handle if the free list queue is empty.
     if(m_freeListIsEmpty)
     {
         Assert(m_freeListDequeue == InvalidQueueElement, "Free list queue is marked as empty but it's actually not!");
         Assert(m_freeListEnqueue == InvalidQueueElement, "Free list queue is marked as empty but it's actually not!");
 
-        // Create an entity handle.
-        EntityHandle handle;
-        handle.m_identifier = m_handles.size() + 1;
-        handle.m_version = 0;
+        this->AllocateHandle();
 
-        // Create a handle entry.
-        HandleEntry entry;
-        entry.handle = handle;
-        entry.nextFree = InvalidNextFree;
-        entry.flags = HandleFlags::Free;
-
-        m_handles.push_back(entry);
-
-        // Add new handle entry to the free list queue.
-        int handleIndex = m_handles.size() - 1;
-
-        m_freeListDequeue = handleIndex;
-        m_freeListEnqueue = handleIndex;
-        m_freeListIsEmpty = false;
+        Assert(m_freeListDequeue != InvalidQueueElement, "Free list queue is empty after allocating a handle!");
+        Assert(m_freeListEnqueue != InvalidQueueElement, "Free list queue is empty after allocating a handle!");
+        Assert(!m_freeListIsEmpty, "Free list queue is empty after allocating a handle!");
     }
 
     // Retrieve an unused handle from the free list queue.
@@ -150,9 +136,6 @@ EntityHandle EntitySystem::CreateEntity()
     command.handle = handleEntry.handle;
 
     m_commands.push(command);
-
-    // Increment the counter of valid entities.
-    m_entityCount += 1;
 
     // Returns a valid handle for an entity that will be created on the next ProcessCommands() call.
     return handleEntry.handle;
@@ -190,49 +173,23 @@ void EntitySystem::DestroyAllEntities()
     if(!m_initialized)
         return;
 
-    // Process remaining entity commands.
+    // Process entity commands.
     this->ProcessCommands();
 
-    // Check if there are any entities to destroy.
-    if(m_handles.empty())
-        return;
-
-    // Inform about entities soon to be destroyed.
+    // Destroy all remaining entities.
     for(auto it = m_handles.begin(); it != m_handles.end(); ++it)
     {
         HandleEntry& handleEntry = *it;
 
+        // Calculate handle index.
+        int handleIndex = handleEntry.handle.m_identifier - 1;
+
+        // Destroy entities that are still valid.
         if(handleEntry.flags & HandleFlags::Valid)
         {
-            // Send event about soon to be destroyed entity.
-            this->events.destroy({ handleEntry.handle });
-
-            // Set handle free flags.
-            handleEntry.flags = HandleFlags::Free;
-
-            // Increment handle version to invalidate it.
-            handleEntry.handle.m_version += 1;
-
-            // Decrement the counter of active entities.
-            //m_entityCount -= 1;
+            this->DestroyHandle(handleIndex, handleEntry);
         }
     }
-
-    // Chain handles into a free list queue.
-    for(std::size_t i = 0; i < m_handles.size(); ++i)
-    {
-        HandleEntry& handleEntry = m_handles[i];
-        handleEntry.nextFree = i + 1;
-    }
-
-    // Close the free list queue chain at the end.
-    int lastHandleIndex = m_handles.size() - 1;
-    m_handles[lastHandleIndex].nextFree = InvalidNextFree;
-
-    // Set the free list queue variables.
-    m_freeListDequeue = 0;
-    m_freeListEnqueue = lastHandleIndex;
-    m_freeListIsEmpty = false;
 }
 
 void EntitySystem::ProcessCommands()
@@ -243,7 +200,7 @@ void EntitySystem::ProcessCommands()
     // Process entity commands.
     while(!m_commands.empty())
     {
-        // Get the command from the queue.
+        // Get a command from the queue.
         EntityCommand& command = m_commands.front();
 
         // Process entity command.
@@ -255,23 +212,11 @@ void EntitySystem::ProcessCommands()
                 int handleIndex = command.handle.m_identifier - 1;
                 HandleEntry& handleEntry = m_handles[handleIndex];
 
+                // Check if entity matches the handle entry.
                 Assert(command.handle == handleEntry.handle, "Attempting to create a non existing entity!");
 
-                // Inform that we want this entity finalized.
-                if(!this->events.finalize({ handleEntry.handle }))
-                {
-                    // Destroy if entity failed to finalize.
-                    this->DestroyEntity(handleEntry.handle);
-                    break;
-                }
-
-                // Mark handle as active.
-                Assert(!(handleEntry.flags & HandleFlags::Active), "Created entity is already active!");
-
-                handleEntry.flags |= HandleFlags::Active;
-
-                // Inform about a created entity.
-                this->events.create({ handleEntry.handle });
+                // Create an entity.
+                this->CreateHandle(handleIndex, handleEntry);
             }
             break;
 
@@ -281,20 +226,103 @@ void EntitySystem::ProcessCommands()
                 int handleIndex = command.handle.m_identifier - 1;
                 HandleEntry& handleEntry = m_handles[handleIndex];
 
-                Assert(command.handle == handleEntry.handle, "Attempting to destroy a non existing entity!");
+                // Check if entity has been already destroyed.
+                if(command.handle != handleEntry.handle)
+                    break;
 
-                // Inform about a destroyed entity.
-                this->events.destroy({ handleEntry.handle });
-
-                // Free entity handle.
-                this->FreeHandle(handleIndex, handleEntry);
+                // Destroy an entity.
+                this->DestroyHandle(handleIndex, handleEntry);
             }
             break;
         }
 
-        // Remove command from the queue.
+        // Remove processed command from the queue.
         m_commands.pop();
     }
+}
+
+void EntitySystem::AllocateHandle()
+{
+    Assert(m_initialized, "Entity system is not initialized!");
+    
+    // Create an entity handle.
+    EntityHandle handle;
+    handle.m_identifier = m_handles.size() + 1;
+    handle.m_version = 0;
+
+    // Create a handle entry.
+    HandleEntry entry;
+    entry.handle = handle;
+    entry.nextFree = InvalidNextFree;
+    entry.flags = HandleFlags::Free;
+
+    m_handles.push_back(entry);
+
+    // Add new handle entry to the free list queue.
+    int handleIndex = m_handles.size() - 1;
+
+    if(m_freeListIsEmpty)
+    {
+        // Add a free handle to empty free list queue.
+        m_freeListDequeue = handleIndex;
+        m_freeListEnqueue = handleIndex;
+        m_freeListIsEmpty = false;
+    }
+    else
+    {
+        // Add a free handle to occupied free list queue.
+        m_handles[m_freeListEnqueue].nextFree = handleIndex;
+        m_freeListEnqueue = handleIndex;
+    }
+}
+
+void EntitySystem::CreateHandle(const int handleIndex, HandleEntry& handleEntry)
+{
+    Assert(m_initialized, "Entity system is not initialized!");
+
+    // Make sure we got the matching index.
+    Assert(handleIndex >= 0 && (std::size_t)handleIndex < m_handles.size(), "Invalid handle index!");
+    Assert(&m_handles[handleIndex] == &handleEntry, "Missmatch between passed handle index and entry!");
+
+    // Increment the counter of active entities.
+    m_entityCount += 1;
+
+    // Inform that we want this entity finalized.
+    if(this->events.finalize.HasSubscribers())
+    {
+        if(!this->events.finalize({ handleEntry.handle }))
+        {
+            // Destroy the entity handle if finalization fails.
+            this->DestroyHandle(handleIndex, handleEntry);
+            return;
+        }
+    }
+
+    // Mark handle as active.
+    Assert(!(handleEntry.flags & HandleFlags::Active), "Created entity is already active!");
+
+    handleEntry.flags |= HandleFlags::Active;
+
+    // Inform about a created entity.
+    this->events.create({ handleEntry.handle });
+}
+
+void EntitySystem::DestroyHandle(const int handleIndex, HandleEntry& handleEntry)
+{
+    Assert(m_initialized, "Entity system is not initialized!");
+
+    // Make sure we got the matching index.
+    Assert(handleIndex >= 0 && (std::size_t)handleIndex < m_handles.size(), "Invalid handle index!");
+    Assert(&m_handles[handleIndex] == &handleEntry, "Missmatch between passed handle index and entry!");
+
+    // Inform about a destroyed entity.
+    this->events.destroy({ handleEntry.handle });
+
+    // Free entity handle.
+    this->FreeHandle(handleIndex, handleEntry);
+
+    // Decrement the counter of active entities.
+    m_entityCount -= 1;
 }
 
 void EntitySystem::FreeHandle(const int handleIndex, HandleEntry& handleEntry)
@@ -308,7 +336,6 @@ void EntitySystem::FreeHandle(const int handleIndex, HandleEntry& handleEntry)
     // Mark handle as free.
     Assert(!(handleEntry.flags & HandleFlags::Free), "Attempting to free a handle that is already free!");
     Assert(handleEntry.flags & HandleFlags::Valid, "Attempting to free a handle that is not valid!");
-    Assert(handleEntry.flags & HandleFlags::Destroy, "Attempting to free a handle that is not being destroyed!");
 
     handleEntry.flags = HandleFlags::Free;
 
@@ -333,9 +360,6 @@ void EntitySystem::FreeHandle(const int handleIndex, HandleEntry& handleEntry)
         m_handles[m_freeListEnqueue].nextFree = handleIndex;
         m_freeListEnqueue = handleIndex;
     }
-
-    // Decrement the counter of valid entities.
-    m_entityCount -= 1;
 }
 
 bool EntitySystem::IsHandleValid(const EntityHandle& entity) const
