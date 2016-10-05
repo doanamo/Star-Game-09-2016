@@ -136,8 +136,14 @@ namespace Game
         typedef std::vector<HandleEntry> HandleList;
 
     private:
+        // Calculates handle index.
+        int CalculateHandleIndex(const EntityHandle& handle) const;
+
         // Allocate an entity handle.
         void AllocateHandle();
+
+        // Retrieves a free entity handle.
+        HandleEntry& RetrieveHandle();
 
         // Creates an entity handle.
         void CreateHandle(const int handleIndex, HandleEntry& handEntry);

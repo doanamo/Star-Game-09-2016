@@ -36,17 +36,19 @@ void EntitySystem::Cleanup()
     // Destroy all remaining entities.
     this->DestroyAllEntities();
 
+    // Check the state before cleaning up.
+    Assert(m_commands.empty(), "Cleaning up the entity system while there are unprocessed command left!");
+    Assert(m_entityCount == 0, "Cleaning up the entity system while there are alive entities left!");
+
     // Cleanup event dispatchers.
     this->events.finalize.Cleanup();
     this->events.create.Cleanup();
     this->events.destroy.Cleanup();
 
     // Clear the command list.
-    Assert(m_commands.empty(), "Destroying command list that is not empty!");
     Utility::ClearContainer(m_commands);
 
     // Clear the entity list.
-    Assert(m_entityCount == 0, "Destroying handle list while there are active entities left!");
     Utility::ClearContainer(m_handles);
 
     // Reset the entity counter.
@@ -57,7 +59,7 @@ void EntitySystem::Cleanup()
     m_freeListEnqueue = InvalidQueueElement;
     m_freeListIsEmpty = true;
 
-    // Reset initialization state.
+    // Reset the initialization state.
     m_initialized = false;
 }
 
@@ -77,7 +79,7 @@ bool EntitySystem::Initialize()
     );
 
     // Preallocate entity handles.
-    // TODO!
+    // TODO: Implement me!
 
     // Success!
     return m_initialized = true;
@@ -91,53 +93,20 @@ EntityHandle EntitySystem::CreateEntity()
     // Check if we reached the numerical limit.
     Verify(m_handles.size() < MaximumIdentifier, "Entity handle identifier reached its numerical limit!");
 
-    // Allocate a handle if the free list queue is empty.
-    if(m_freeListIsEmpty)
-    {
-        Assert(m_freeListDequeue == InvalidQueueElement, "Free list queue is marked as empty but it's actually not!");
-        Assert(m_freeListEnqueue == InvalidQueueElement, "Free list queue is marked as empty but it's actually not!");
+    // Retrieve a free handle.
+    HandleEntry& handleEntry = this->RetrieveHandle();
 
-        this->AllocateHandle();
-
-        Assert(m_freeListDequeue != InvalidQueueElement, "Free list queue is empty after allocating a handle!");
-        Assert(m_freeListEnqueue != InvalidQueueElement, "Free list queue is empty after allocating a handle!");
-        Assert(!m_freeListIsEmpty, "Free list queue is empty after allocating a handle!");
-    }
-
-    // Retrieve an unused handle from the free list queue.
-    int handleIndex = m_freeListDequeue;
-    HandleEntry& handleEntry = m_handles[handleIndex];
-
-    Assert(handleEntry.flags == HandleFlags::Free, "Retrieved handle is not marked as free!");
-
-    // Remove the retrieved handle from the free list queue. 
-    if(m_freeListDequeue == m_freeListEnqueue)
-    {
-        // Set the free list queue state to empty if it had only one element.
-        m_freeListDequeue = InvalidQueueElement;
-        m_freeListEnqueue = InvalidQueueElement;
-        m_freeListIsEmpty = true;
-    }
-    else
-    {
-        // Set the beginning of the queue to the next free element if it had multiple elements.
-        m_freeListDequeue = handleEntry.nextFree;
-        handleEntry.nextFree = InvalidNextFree;
-    }
-
-    Assert(handleEntry.nextFree == InvalidNextFree, "Removed handle still refers to a next free handle!");
-
-    // Mark handle as valid.
+    // Mark the retrieved handle as valid.
     handleEntry.flags |= HandleFlags::Valid;
 
-    // Schedule entity to be created.
+    // Schedule an entity to be created.
     EntityCommand command;
     command.type = EntityCommands::Create;
     command.handle = handleEntry.handle;
 
     m_commands.push(command);
 
-    // Returns a valid handle for an entity that will be created on the next ProcessCommands() call.
+    // Return a valid handle.
     return handleEntry.handle;
 }
 
@@ -151,16 +120,16 @@ void EntitySystem::DestroyEntity(const EntityHandle& entity)
         return;
 
     // Retrieve the handle entry.
-    int handleIndex = entity.m_identifier - 1;
+    int handleIndex = this->CalculateHandleIndex(entity);
     HandleEntry& handleEntry = m_handles[handleIndex];
 
     Assert(handleEntry.flags & HandleFlags::Valid, "Attempting to destroy an entity that is not valid!");
     Assert(!(handleEntry.flags & HandleFlags::Destroy), "Attempting to destroy an entity that is already being destroyed!");
 
-    // Mark handle to be destroyed.
+    // Mark the handle to be destroyed.
     handleEntry.flags |= HandleFlags::Destroy;
 
-    // Schedule entity to be destroyed.
+    // Schedule the entity to be destroyed.
     EntityCommand command;
     command.type = EntityCommands::Destroy;
     command.handle = handleEntry.handle;
@@ -179,10 +148,11 @@ void EntitySystem::DestroyAllEntities()
     // Destroy all remaining entities.
     for(auto it = m_handles.begin(); it != m_handles.end(); ++it)
     {
+        // Get the handle entry.
         HandleEntry& handleEntry = *it;
 
-        // Calculate handle index.
-        int handleIndex = handleEntry.handle.m_identifier - 1;
+        // Calculate the handle index.
+        int handleIndex = this->CalculateHandleIndex(handleEntry.handle);
 
         // Destroy entities that are still valid.
         if(handleEntry.flags & HandleFlags::Valid)
@@ -200,19 +170,19 @@ void EntitySystem::ProcessCommands()
     // Process entity commands.
     while(!m_commands.empty())
     {
-        // Get a command from the queue.
+        // Get the first command in the queue.
         EntityCommand& command = m_commands.front();
 
-        // Process entity command.
+        // Process the entity command.
         switch(command.type)
         {
         case EntityCommands::Create:
             {
                 // Locate the handle entry.
-                int handleIndex = command.handle.m_identifier - 1;
+                int handleIndex = this->CalculateHandleIndex(command.handle);
                 HandleEntry& handleEntry = m_handles[handleIndex];
 
-                // Check if entity matches the handle entry.
+                // Check if the entity handle matches the handle entry.
                 Assert(command.handle == handleEntry.handle, "Attempting to create a non existing entity!");
 
                 // Create an entity.
@@ -223,12 +193,11 @@ void EntitySystem::ProcessCommands()
         case EntityCommands::Destroy:
             {
                 // Locate the handle entry.
-                int handleIndex = command.handle.m_identifier - 1;
+                int handleIndex = this->CalculateHandleIndex(command.handle);
                 HandleEntry& handleEntry = m_handles[handleIndex];
 
-                // Check if entity has been already destroyed.
-                if(command.handle != handleEntry.handle)
-                    break;
+                // Check if the entity handle matches the handle entry.
+                Assert(command.handle == handleEntry.handle, "Attempting to destroy a non existing entity!");
 
                 // Destroy an entity.
                 this->DestroyHandle(handleIndex, handleEntry);
@@ -236,9 +205,20 @@ void EntitySystem::ProcessCommands()
             break;
         }
 
-        // Remove processed command from the queue.
+        // Remove the processed command from the queue.
         m_commands.pop();
     }
+}
+
+int EntitySystem::GetEntityCount() const
+{
+    return m_entityCount;
+}
+
+int EntitySystem::CalculateHandleIndex(const EntityHandle& handle) const
+{
+    // Return the index of the handle entry that corresponds to this entity handle.
+    return handle.m_identifier - 1;
 }
 
 void EntitySystem::AllocateHandle()
@@ -253,27 +233,69 @@ void EntitySystem::AllocateHandle()
     // Create a handle entry.
     HandleEntry entry;
     entry.handle = handle;
-    entry.nextFree = InvalidNextFree;
     entry.flags = HandleFlags::Free;
+    entry.nextFree = InvalidNextFree;
 
     m_handles.push_back(entry);
 
-    // Add new handle entry to the free list queue.
-    int handleIndex = m_handles.size() - 1;
+    // Add the created handle entry to the free list queue.
+    int handleIndex = this->CalculateHandleIndex(handle);
 
     if(m_freeListIsEmpty)
     {
-        // Add a free handle to empty free list queue.
+        // Add the handle as the only element of the queue.
         m_freeListDequeue = handleIndex;
         m_freeListEnqueue = handleIndex;
         m_freeListIsEmpty = false;
     }
     else
     {
-        // Add a free handle to occupied free list queue.
+        // Add the handle at the end of the queue.
         m_handles[m_freeListEnqueue].nextFree = handleIndex;
         m_freeListEnqueue = handleIndex;
     }
+}
+
+EntitySystem::HandleEntry& EntitySystem::RetrieveHandle()
+{
+    Assert(m_initialized, "Entity system is not initialized!");
+
+    // Allocate a handle if the free list queue is empty.
+    // TODO: Add a stable minimum amount of free list queue elements.
+    if(m_freeListIsEmpty)
+    {
+        Assert(m_freeListDequeue == InvalidQueueElement, "Free list dequeue is not invalid while the list is not empty!");
+        Assert(m_freeListEnqueue == InvalidQueueElement, "Free list enqueue is not invalid while the list is not empty!");
+
+        this->AllocateHandle();
+
+        Assert(m_freeListDequeue != InvalidQueueElement, "Free list dequeue is invalid after allocating a handle!");
+        Assert(m_freeListEnqueue != InvalidQueueElement, "Free list enqueue is invalid after allocating a handle!");
+        Assert(!m_freeListIsEmpty, "Free list queue is empty after allocating a handle!");
+    }
+
+    // Retrieve an unused handle from the free list queue.
+    int handleIndex = m_freeListDequeue;
+    HandleEntry& handleEntry = m_handles[handleIndex];
+
+    Assert(handleEntry.flags == HandleFlags::Free, "Retrieved handle is not marked as free!");
+
+    // Remove the retrieved handle from the free list queue. 
+    if(m_freeListDequeue == m_freeListEnqueue)
+    {
+        // Remove the handle as the only element of the queue.
+        m_freeListDequeue = InvalidQueueElement;
+        m_freeListEnqueue = InvalidQueueElement;
+        m_freeListIsEmpty = true;
+    }
+    else
+    {
+        // Remove the handle from the beginning of the queue.
+        m_freeListDequeue = handleEntry.nextFree;
+        handleEntry.nextFree = InvalidNextFree;
+    }
+
+    return handleEntry;
 }
 
 void EntitySystem::CreateHandle(const int handleIndex, HandleEntry& handleEntry)
@@ -283,6 +305,10 @@ void EntitySystem::CreateHandle(const int handleIndex, HandleEntry& handleEntry)
     // Make sure we got the matching index.
     Assert(handleIndex >= 0 && (std::size_t)handleIndex < m_handles.size(), "Invalid handle index!");
     Assert(&m_handles[handleIndex] == &handleEntry, "Missmatch between passed handle index and entry!");
+
+    // Check handle flags.
+    Assert(!(handleEntry.flags & HandleFlags::Active), "Attempting to create a handle that is already active!");
+    Assert(handleEntry.flags & HandleFlags::Valid, "Attemping to create a handle that is not valid!");
 
     // Increment the counter of active entities.
     m_entityCount += 1;
@@ -298,9 +324,7 @@ void EntitySystem::CreateHandle(const int handleIndex, HandleEntry& handleEntry)
         }
     }
 
-    // Mark handle as active.
-    Assert(!(handleEntry.flags & HandleFlags::Active), "Created entity is already active!");
-
+    // Mark the handle as active.
     handleEntry.flags |= HandleFlags::Active;
 
     // Inform about a created entity.
@@ -333,19 +357,19 @@ void EntitySystem::FreeHandle(const int handleIndex, HandleEntry& handleEntry)
     Assert(handleIndex >= 0 && (std::size_t)handleIndex < m_handles.size(), "Invalid handle index!");
     Assert(&m_handles[handleIndex] == &handleEntry, "Missmatch between passed handle index and entry!");
 
-    // Mark handle as free.
+    // Mark the handle as free.
     Assert(!(handleEntry.flags & HandleFlags::Free), "Attempting to free a handle that is already free!");
     Assert(handleEntry.flags & HandleFlags::Valid, "Attempting to free a handle that is not valid!");
 
     handleEntry.flags = HandleFlags::Free;
 
-    // Increment handle version to invalidate it.
+    // Increment the handle version to invalidate it.
     handleEntry.handle.m_version += 1;
 
-    // Add handle entry to the free list queue.
+    // Add the handle entry to the free list queue.
     if(m_freeListIsEmpty)
     {
-        // Add a free handle to empty free list queue.
+        // Add the handle as the only element of the queue.
         m_freeListDequeue = handleIndex;
         m_freeListEnqueue = handleIndex;
         m_freeListIsEmpty = false;
@@ -356,7 +380,7 @@ void EntitySystem::FreeHandle(const int handleIndex, HandleEntry& handleEntry)
         Assert(m_handles[m_freeListEnqueue].nextFree == InvalidNextFree, "Last element in the free list queue is pointing at a next free handle!");
         Assert(handleEntry.nextFree == InvalidNextFree, "Fried handle entry is poiting to a next free handle!");
 
-        // Add a free handle to occupied free list queue.
+        // Add the handle at the end of the queue.
         m_handles[m_freeListEnqueue].nextFree = handleIndex;
         m_freeListEnqueue = handleIndex;
     }
@@ -375,14 +399,14 @@ bool EntitySystem::IsHandleValid(const EntityHandle& entity) const
     Assert(entity.m_identifier <= (int)m_handles.size(), "Corrupted entity handle identifier encountered!")
 
     // Retrieve the handle entry.
-    int handleIndex = entity.m_identifier - 1;
+    int handleIndex = this->CalculateHandleIndex(entity);
     const HandleEntry& handleEntry = m_handles[handleIndex];
 
-    // Check if handle entry is valid.
+    // Check if the handle entry is valid.
     if(!(handleEntry.flags & HandleFlags::Valid))
         return false;
 
-    // Check if handle is scheduled to be destroyed.
+    // Check if the handle is scheduled to be destroyed.
     if(handleEntry.flags & HandleFlags::Destroy)
         return false;
 
@@ -391,9 +415,4 @@ bool EntitySystem::IsHandleValid(const EntityHandle& entity) const
         return false;
 
     return true;
-}
-
-int EntitySystem::GetEntityCount() const
-{
-    return m_entityCount;
 }
