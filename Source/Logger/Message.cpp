@@ -114,7 +114,7 @@ bool Message::IsEmpty() const
 ScopedMessage::ScopedMessage(Logger::Sink* sink) :
     m_sink(sink)
 {
-    Assert(sink != nullptr, "Attempted to create a scoped message with no sink!")
+    Assert(sink != nullptr, "Attempted to create a scoped message with no sink!");
 }
 
 ScopedMessage::ScopedMessage(ScopedMessage&& other)

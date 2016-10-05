@@ -396,7 +396,7 @@ bool EntitySystem::IsHandleValid(const EntityHandle& entity) const
         return false;
 
     Assert(entity.m_identifier > InvalidIdentifier, "Corrupted entity handle identifier encountered!");
-    Assert(entity.m_identifier <= (int)m_handles.size(), "Corrupted entity handle identifier encountered!")
+    Assert(entity.m_identifier <= (int)m_handles.size(), "Corrupted entity handle identifier encountered!");
 
     // Retrieve the handle entry.
     int handleIndex = this->CalculateHandleIndex(entity);
